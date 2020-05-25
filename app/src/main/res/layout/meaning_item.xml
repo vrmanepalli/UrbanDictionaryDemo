@@ -32,6 +32,12 @@
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/play"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:src="@drawable/ic_play_arrow_black_24dp"></androidx.appcompat.widget.AppCompatImageButton>
+
         </LinearLayout>
 
         <TextView

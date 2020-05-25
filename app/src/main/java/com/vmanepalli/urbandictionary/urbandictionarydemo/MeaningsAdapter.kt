@@ -42,6 +42,37 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
         holder.updateViews(meanings[position])
     }
 
+    // Media Player functions
+
+    private fun play(url: String) {
+        if (mediaPlayer?.isPlaying == true) {
+            killPlayer()
+        }
+        try {
+            mediaPlayer = MediaPlayer()
+            mediaPlayer?.setDataSource(url)
+            mediaPlayer?.prepare()
+            mediaPlayer?.start()
+        } catch (e: Exception) {
+            print("Failed to initialize media player - ${e.localizedMessage}")
+        }
+    }
+
+    private fun killPlayer() {
+        if (mediaPlayer == null) {
+            return
+        }
+        mediaPlayer?.reset()
+    }
+
+    private fun getSound(urls: List<String>): String {
+        if (urls.isEmpty()) {
+            return ""
+        }
+        val position = Random.nextInt(0, urls.size)
+        return urls[position]
+    }
+
     inner class MeaningHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private var wordView = itemView.word
         private var thumbsUpView = itemView.thumbs_up
@@ -50,6 +81,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
         private var exampleView = itemView.example
         private var authorView = itemView.author
         private var dateView = itemView.date
+        private var playView: ImageButton? = itemView.play
 
         fun updateViews(meaning: Meaning) {
             wordView.text = meaning.word
@@ -59,6 +91,13 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
             exampleView.text = meaning.example
             authorView.text = meaning.author
             dateView.text = convertDate(meaning.written_on)
+            if (meaning.sound_urls.isEmpty()) {
+                playView?.visibility = View.GONE
+                return
+            } else {
+                playView?.visibility = View.VISIBLE
+            }
+            playView?.setOnClickListener { play(getSound(meaning.sound_urls)) }
         }
     }
 
