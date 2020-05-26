@@ -43,7 +43,8 @@
                     android:layout_marginRight="10dp"
                     android:layout_weight="1"
                     android:hint="Search"
-                    android:singleLine="true" />
+                    android:singleLine="true"
+                    android:bufferType="spannable" />
 
                 <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/sort"

@@ -1,12 +1,18 @@
 package com.vmanepalli.urbandictionary.urbandictionarydemo.activities
 
+/**
+ *
+ * Initial load of this activity asks MeaningsViewModel for meanings of 'number'.
+ * Whenever user searches for meanings for any word, it will ask MeaningsViewModel to find in local DB and also from Urban Dictionary via api call, in the order stated.
+ *
+ **/
+
 import android.content.res.Configuration
 import android.os.Bundle
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -37,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         setSearchListener()
         configureRecyclerView()
         addObserver()
+
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
     }
 
@@ -52,6 +59,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addDivider(orientationNow: Int) {
+        // The integer values of recyclerview orientation are offset by 1 than
+        // screen configuration orientation. So performing this check.
         val decorationO = if (orientationNow == 1) {
             DividerItemDecoration.VERTICAL
         } else {
@@ -62,6 +71,10 @@ class MainActivity : AppCompatActivity() {
         recycler_view.addItemDecoration(dividerItemDecoration)
     }
 
+    // This observer for Meanings Live Data list, gets notified for updating UI,
+    // whenever changes in DB; to this List takes place.
+    // The changes could happen when MeaningViewModel queries DB or makes an API
+    // call.
     private fun addObserver() {
         meaningViewModel = ViewModelProvider(
             this,
@@ -73,6 +86,8 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    // Initial order of meanings is unchanged and loaded as it is in API response
+    // or DB query.
     private fun notifyAdapter(it: List<Meaning>?) {
         val results = it ?: listOf()
         if (meaningsAdapter == null) {
@@ -84,13 +99,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Search listener asks MeaningsViewModel to make DB and DB calls for user
+    // entry, only after enter enter/go is clicked from keyboard.
     private fun setSearchListener() {
         search.setOnKeyListener(View.OnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 search.hideKeyboard()
                 progress.visibility = View.INVISIBLE
                 searchTerm = search.text.toString()
-                meaningViewModel?.searchMeaning(searchTerm, isConnected)
+                meaningViewModel?.searchMeaning(isConnected, searchTerm)
                 return@OnKeyListener true
             }
             false
@@ -98,20 +115,21 @@ class MainActivity : AppCompatActivity() {
         search.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
     }
 
+    // Only sorting either in asc or desc order of thumbs_up by maintaining a
+    // flag for storing previous state.
     fun sort(view: View?) {
-        showUnderDevToast()
+        meaningsAdapter?.sort(ascendingOrder)
+        meaningsAdapter?.notifyDataSetChanged()
+        ascendingOrder = !ascendingOrder
     }
 
+    // Refresh does API calls only to see if there any new entries available
     fun refresh(view: View?) {
-        showUnderDevToast()
-    }
-
-    private fun showUnderDevToast() {
-        Toast.makeText(
-            applicationContext,
-            "Not available! Development in progress..!",
-            Toast.LENGTH_SHORT
-        ).show()
+        if (searchTerm == null) {
+            return
+        }
+        progress.visibility = View.VISIBLE
+        meaningViewModel?.searchMeaningsOnline(isConnected, searchTerm)
     }
 
 }

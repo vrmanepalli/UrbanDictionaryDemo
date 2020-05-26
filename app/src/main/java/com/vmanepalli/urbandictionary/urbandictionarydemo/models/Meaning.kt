@@ -24,6 +24,7 @@ data class Meaning(
 
 private const val SEPARATOR = ","
 
+// This helper class takes care of converting list to string when inserting and string list when reading from database, cause there is no direct way to store a list on DB.
 class SoundURLsConverter {
     @TypeConverter
     fun stringToList(value: String?): MutableList<String> {
