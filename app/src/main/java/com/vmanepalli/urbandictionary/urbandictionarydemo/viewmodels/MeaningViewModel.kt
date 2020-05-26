@@ -1,5 +1,12 @@
 package com.vmanepalli.urbandictionary.urbandictionarydemo.viewmodels
 
+/**
+ *
+ * This view model is responsible for making DB calls and api calls to get old and new data.
+ * As it gets new data from Urban Dictionary, it will save it to the database.
+ *
+ **/
+
 import android.app.Application
 import android.util.Log
 import android.widget.Toast
@@ -32,8 +39,14 @@ class MeaningViewModel(application: Application, term: String) : ViewModel() {
         return dictionaryRepository.getAllMeanings()
     }
 
-    fun searchMeaning(searchTerm: String, isConnected: Boolean) {
+    fun searchMeaning(isConnected: Boolean, searchTerm: String) {
+        // Search in DB
         filterAllMeanings(searchTerm)
+        // Search via API call
+        searchMeaningsOnline(isConnected, searchTerm)
+    }
+
+    fun searchMeaningsOnline(isConnected: Boolean, searchTerm: String) {
         if (!isConnected) {
             Toast.makeText(
                 context,
@@ -69,6 +82,7 @@ class MeaningViewModel(application: Application, term: String) : ViewModel() {
         meaningsRetriever.getMeanings(callback, searchTerm)
     }
 
+    // Search in DB my placing query for term
     private fun filterAllMeanings(term: String) {
         dictionaryRepository.filterAllMeanings(term)
     }

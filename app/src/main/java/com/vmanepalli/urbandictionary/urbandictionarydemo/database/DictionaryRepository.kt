@@ -22,15 +22,18 @@ class DictionaryRepository {
         }
     }
 
+    // Inserting to DB which means also change in DB, so posting results
     fun insertMeanings(results: List<Meaning>?, forTerm: String) {
         GlobalScope.launch(Dispatchers.Default) {
             if (results != null) {
                 meaningDAO.insertAll(results)
             }
+            // Posting DB queries results so the observer in MainActivity or anywhere will update UI.
             meanings.postValue(meaningDAO.findByTerm(forTerm))
         }
     }
 
+    // Posting DB queries results so the observer in MainActivity or anywhere will update UI.
     fun filterAllMeanings(forTerm: String) {
         GlobalScope.launch(Dispatchers.Default) {
             meanings.postValue(meaningDAO.findByTerm(forTerm))

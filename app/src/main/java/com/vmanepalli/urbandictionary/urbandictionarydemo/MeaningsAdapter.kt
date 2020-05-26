@@ -20,6 +20,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
 
     private var mediaPlayer: MediaPlayer? = null
 
+    // Just sorts in ascending order if parameter is true, otherwise false.
     fun sort(inAscendingOrder: Boolean) {
         meanings = if (inAscendingOrder) {
             meanings.sortedBy { it.thumbs_up }
