@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
         search.setOnKeyListener(View.OnKeyListener { _, keyCode, event ->
             if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_UP) {
                 search.hideKeyboard()
-                progress.visibility = View.INVISIBLE
+                progress.visibility = View.VISIBLE
                 searchTerm = search.text.toString()
                 meaningViewModel?.searchMeaning(isConnected, searchTerm)
                 return@OnKeyListener true
