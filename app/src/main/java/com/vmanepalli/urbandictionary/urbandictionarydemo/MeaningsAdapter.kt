@@ -6,10 +6,12 @@ import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
 import kotlinx.android.synthetic.main.meaning_layout.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -18,15 +20,16 @@ import kotlin.random.Random
 class MeaningsAdapter(var meanings: List<Meaning>) :
     RecyclerView.Adapter<MeaningsAdapter.MeaningHolder>() {
 
-    private var mediaPlayer: MediaPlayer? = null
+    private var mediaPlayer: MediaPlayer = MediaPlayer()
 
     // Just sorts in ascending order if parameter is true, otherwise false.
-    fun sort(inAscendingOrder: Boolean) {
-        meanings = if (inAscendingOrder) {
+    fun sortedBy(ascendingOrder: Boolean) {
+        meanings = if (ascendingOrder) {
             meanings.sortedBy { it.thumbs_up }
         } else {
             this.meanings.sortedByDescending { it.thumbs_up }
         }
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MeaningHolder {
@@ -46,16 +49,16 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
     // Media Player functions
 
     private fun play(url: String) {
-        if (mediaPlayer?.isPlaying == true) {
-            killPlayer()
-        }
-        try {
-            mediaPlayer = MediaPlayer()
-            mediaPlayer?.setDataSource(url)
-            mediaPlayer?.prepare()
-            mediaPlayer?.start()
-        } catch (e: Exception) {
-            print("Failed to initialize media player - ${e.localizedMessage}")
+        GlobalScope.launch(Dispatchers.Default) {
+            try {
+                killPlayer()
+                mediaPlayer = MediaPlayer()
+                mediaPlayer.setDataSource(url)
+                mediaPlayer.prepare()
+                mediaPlayer.start()
+            } catch (e: Exception) {
+                print("Failed to initialize media player - ${e.localizedMessage}")
+            }
         }
     }
 
@@ -63,7 +66,10 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
         if (mediaPlayer == null) {
             return
         }
-        mediaPlayer?.reset()
+        if (!mediaPlayer.isPlaying) {
+            return
+        }
+        mediaPlayer.reset()
     }
 
     private fun getSound(urls: List<String>): String {
@@ -82,7 +88,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
         private var exampleView = itemView.example
         private var authorView = itemView.author
         private var dateView = itemView.date
-        private var playView: Button? = itemView.play
+        private var playView = itemView.play
 
         fun updateViews(meaning: Meaning) {
             wordView.text = meaning.word

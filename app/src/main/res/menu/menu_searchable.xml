@@ -10,7 +10,7 @@
     <item
         android:id="@+id/sort"
         android:icon="@drawable/ic_asc_order"
-        android:onClick="sort"
+        android:onClick="sortMeanings"
         android:title="@string/sort_meanings"
         app:showAsAction="always" />
     <item

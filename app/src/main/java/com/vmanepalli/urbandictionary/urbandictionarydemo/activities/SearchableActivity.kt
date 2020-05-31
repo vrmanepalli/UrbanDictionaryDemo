@@ -23,23 +23,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.vmanepalli.urbandictionary.urbandictionarydemo.MeaningsAdapter
-import com.vmanepalli.urbandictionary.urbandictionarydemo.R
-import com.vmanepalli.urbandictionary.urbandictionarydemo.addDivider
+import com.vmanepalli.urbandictionary.urbandictionarydemo.*
 import com.vmanepalli.urbandictionary.urbandictionarydemo.viewmodels.MeaningViewModel
 import com.vmanepalli.urbandictionary.urbandictionarydemo.viewmodels.MeaningViewModelFactory
 import kotlinx.android.synthetic.main.activity_searchable.*
 import kotlinx.android.synthetic.main.content_searchable.*
 
-
 class SearchableActivity : AppCompatActivity() {
 
-    private var ascendingOrder = true
     private var progress: MenuItem? = null
     private var refreshItem: MenuItem? = null
     private var sortItem: MenuItem? = null
     private var searchActionView: SearchView? = null
-    private var isConnected = true
+
+    private var ascendingOrder: Boolean
+    get() = getSharedPreferences(resources.getString(R.string.app_name), MODE_PRIVATE).getBoolean(SORT_ORDER, true)
+    set(value) { getSharedPreferences(resources.getString(R.string.app_name), MODE_PRIVATE).edit().putBoolean(SORT_ORDER, value).apply() }
 
     private val meaningsAdapter: MeaningsAdapter by lazy { MeaningsAdapter(listOf()) }
 
@@ -50,24 +49,12 @@ class SearchableActivity : AppCompatActivity() {
         ).get(MeaningViewModel::class.java)
     }
 
-    private val broadcastReceiver: BroadcastReceiver by lazy {
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                isConnected = intent.getBooleanExtra(
-                    ConnectivityManager
-                        .EXTRA_NO_CONNECTIVITY, false
-                )
-            }
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_searchable)
         setSupportActionBar(toolbar)
         configureRecyclerView()
         addObserver()
-        registerReceiver(broadcastReceiver, IntentFilter(ConnectivityManager.EXTRA_NO_CONNECTIVITY))
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -92,30 +79,21 @@ class SearchableActivity : AppCompatActivity() {
             searchView.clearFocus()
             searchActionView = searchView
         }
+        sortMeanings(ascendingOrder)
         return true
-    }
-
-    override fun onStop() {
-        super.onStop()
-        unregisterReceiver(broadcastReceiver)
     }
 
     // Only sorting either in asc or desc order of thumbs_up by maintaining a
     // flag for storing previous state.
-    fun sort(item: MenuItem) {
-        with(meaningsAdapter) {
-            if (meanings.isEmpty()) {
-                return
-            }
-            sort(!ascendingOrder)
-            notifyDataSetChanged()
+    fun sortMeanings(item: MenuItem) {
+        if (meaningsAdapter.meanings.isEmpty()) {
+            // Nothing to sort, so toast a message and return
+            application.toast("Sort is unavailable for empty data.")
+            return
         }
-        ascendingOrder = !ascendingOrder
-        sortItem?.icon = if (ascendingOrder)  {
-            resources.getDrawable(R.drawable.ic_asc_order, theme)
-        } else {
-            resources.getDrawable(R.drawable.ic_desc_order, theme)
-        }
+        val order = !ascendingOrder
+        ascendingOrder = order
+        sortMeanings(order)
     }
 
     // Refresh does API calls only to see if there any new entries available
@@ -140,8 +118,10 @@ class SearchableActivity : AppCompatActivity() {
     private fun addObserver() {
         meaningViewModel.getAllMeanings().observe(this, Observer {
             val results = it ?: listOf()
-            meaningsAdapter.meanings = results.sortedBy { it.thumbs_up }
-            meaningsAdapter.notifyDataSetChanged()
+            with(meaningsAdapter) {
+                meanings = results
+                sortMeanings(ascendingOrder)
+            }
         })
     }
 
@@ -153,6 +133,15 @@ class SearchableActivity : AppCompatActivity() {
     private fun hideProgress() {
         progress.hide()
         refreshItem.show()
+    }
+
+    private fun sortMeanings(inOrder: Boolean) {
+        meaningsAdapter.sortedBy(inOrder)
+        sortItem?.icon = if (inOrder) {
+            resources.getDrawable(R.drawable.ic_asc_order, theme)
+        } else {
+            resources.getDrawable(R.drawable.ic_desc_order, theme)
+        }
     }
 
     // MARK - Private Extensions
@@ -172,10 +161,10 @@ class SearchableActivity : AppCompatActivity() {
 
         setOnQueryTextListener(object : OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
+                clearFocus()
                 this@SearchableActivity.showProgress()
                 meaningViewModel.searchMeanings(isConnected, query) {
                     this@SearchableActivity.hideProgress()
-                    clearFocus()
                 }
                 return true
             }
@@ -194,4 +183,9 @@ class SearchableActivity : AppCompatActivity() {
         this?.let { isVisible = false }
     }
 
+    companion object {
+        const val SORT_ORDER = "AscendingOrder"
+    }
+
 }
+

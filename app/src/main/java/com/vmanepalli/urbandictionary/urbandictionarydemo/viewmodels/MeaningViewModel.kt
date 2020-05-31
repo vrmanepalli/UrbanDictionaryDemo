@@ -48,6 +48,7 @@ class MeaningViewModel(application: Application) : ViewModel() {
             return
         }
         if (searchTerm == null) {
+            appContext.toast("Refresh is unavailable when no word entry was made")
             completion()
             return
         }
