@@ -1,0 +1,28 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.vmanepalli.urbandictionary.urbandictionarydemo.activities.SearchableActivity">
+    <item
+        android:id="@+id/menu_search"
+        android:title="@string/action_search"
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/sort"
+        android:icon="@drawable/ic_asc_order"
+        android:onClick="sort"
+        android:title="@string/sort_meanings"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/progress"
+        android:title="@string/progress"
+        app:actionViewClass="android.widget.ProgressBar"
+        android:visible="false"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/refresh"
+        android:icon="@drawable/ic_refresh_black_24dp"
+        android:onClick="refresh"
+        android:title="@string/refresh_meanings_list"
+        app:showAsAction="always" />
+</menu>

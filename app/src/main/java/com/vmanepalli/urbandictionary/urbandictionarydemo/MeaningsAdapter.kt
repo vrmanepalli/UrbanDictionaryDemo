@@ -6,10 +6,10 @@ import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
+import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
-import kotlinx.android.synthetic.main.meaning_item.view.*
+import kotlinx.android.synthetic.main.meaning_layout.view.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -31,7 +31,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MeaningHolder {
         return MeaningHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.meaning_item, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.meaning_layout, parent, false)
         )
     }
 
@@ -76,13 +76,13 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
 
     inner class MeaningHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private var wordView = itemView.word
-        private var thumbsUpView = itemView.thumbs_up
-        private var thumbsDownView = itemView.thumbs_down
+        private var thumbsUpView = itemView.thumbs_up_label
+        private var thumbsDownView = itemView.thumbs_down_label
         private var definitionView = itemView.definition
         private var exampleView = itemView.example
         private var authorView = itemView.author
         private var dateView = itemView.date
-        private var playView: ImageButton? = itemView.play
+        private var playView: Button? = itemView.play
 
         fun updateViews(meaning: Meaning) {
             wordView.text = meaning.word
@@ -93,7 +93,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
             authorView.text = meaning.author
             dateView.text = convertDate(meaning.written_on)
             if (meaning.sound_urls.isEmpty()) {
-                playView?.visibility = View.GONE
+                playView?.visibility = View.INVISIBLE
                 return
             } else {
                 playView?.visibility = View.VISIBLE

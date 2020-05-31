@@ -8,40 +8,43 @@
     tools:context=".activities.SplashScreenActivity"
     tools:showIn="@layout/activity_splash_screen">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/transparent">
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/app_icon"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/logo"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_centerInParent="true"
-            android:src="@drawable/app_icon"
-            android:contentDescription="@string/app_name" />
+    <TextView
+        android:id="@+id/app_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/logo"
+        android:gravity="center_horizontal"
+        android:padding="10dp"
+        android:text="@string/app_name"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logo" />
 
-        <TextView
-            android:id="@+id/app_name"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/logo"
-            android:layout_marginBottom="10dp"
-            android:gravity="center_horizontal"
-            android:padding="10dp"
-            android:text="@string/app_name"
-            android:textAlignment="center"
-            android:textColor="#ffffff"
-            android:textSize="20sp" />
-
-        <ProgressBar
-            android:id="@+id/splash_screen_progress_bar"
-            style="@android:style/Widget.DeviceDefault.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="20dp"
-            android:progressTint="#6995c1" />
-    </RelativeLayout>
+    <ProgressBar
+        android:id="@+id/splash_screen_progress_bar"
+        style="@android:style/Widget.DeviceDefault.ProgressBar.Horizontal"
+        android:layout_width="371dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:progressTint="#6995c1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/app_name" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

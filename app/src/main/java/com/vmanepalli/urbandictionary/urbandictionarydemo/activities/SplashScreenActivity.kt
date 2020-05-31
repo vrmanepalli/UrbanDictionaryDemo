@@ -23,8 +23,8 @@ class SplashScreenActivity : AppCompatActivity() {
 
 
     private fun launchMainActivity() {
-        var intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        var intent = Intent(this, SearchableActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         startActivity(intent)
         mDelayHandler?.removeCallbacks(mRunnable)
         this.finish()

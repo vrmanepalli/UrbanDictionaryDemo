@@ -1,45 +1,32 @@
 package com.vmanepalli.urbandictionary.urbandictionarydemo
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
-import android.view.View
-import android.view.inputmethod.InputMethodManager
+import android.app.Application
+import android.content.res.Configuration
+import android.widget.Toast
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.RecyclerView
 
-inline fun View.hideKeyboard() {
-    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    imm.hideSoftInputFromWindow(windowToken, 0)
+fun Application.toast(message: String) {
+    Toast.makeText(
+        this,
+        message,
+        Toast.LENGTH_SHORT
+    ).show()
 }
 
-val Context.isConnected: Boolean get() {
-    var result = false
-    val cm =
-        getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        if (cm != null) {
-            val capabilities =
-                cm.getNetworkCapabilities(cm.activeNetwork)
-            if (capabilities != null) {
-                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-                    result = true
-                } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-                    result = true
-                }
-            }
-        }
+fun Configuration.orientationForRecyclerView(): Int {
+    // The integer values of recyclerview orientation are offset by 1 than
+    // screen configuration orientation. So performing this check.
+    return if (orientation == 1) {
+        DividerItemDecoration.VERTICAL
     } else {
-        if (cm != null) {
-            val activeNetwork = cm.activeNetworkInfo
-            if (activeNetwork != null) {
-                // connected to the internet
-                if (activeNetwork.type == ConnectivityManager.TYPE_WIFI) {
-                    result = true
-                } else if (activeNetwork.type == ConnectivityManager.TYPE_MOBILE) {
-                    result = true
-                }
-            }
-        }
+        DividerItemDecoration.HORIZONTAL
     }
-    return result
 }
+
+fun RecyclerView.addDivider(applicationContext: Application, newConfig: Configuration) {
+    val dividerItemDecoration =
+        DividerItemDecoration(applicationContext, newConfig.orientationForRecyclerView())
+    this.addItemDecoration(dividerItemDecoration)
+}
+
