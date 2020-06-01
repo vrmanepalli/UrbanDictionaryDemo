@@ -22,16 +22,6 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
 
     private var mediaPlayer: MediaPlayer = MediaPlayer()
 
-    // Just sorts in ascending order if parameter is true, otherwise false.
-    fun sortedBy(ascendingOrder: Boolean) {
-        meanings = if (ascendingOrder) {
-            meanings.sortedBy { it.thumbs_up }
-        } else {
-            this.meanings.sortedByDescending { it.thumbs_up }
-        }
-        notifyDataSetChanged()
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MeaningHolder {
         return MeaningHolder(
             LayoutInflater.from(parent.context).inflate(R.layout.meaning_layout, parent, false)
@@ -46,8 +36,23 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
         holder.updateViews(meanings[position])
     }
 
-    // Media Player functions
+    //region Update/sort meanings data
+    fun replaceData(meanings: List<Meaning>, sortBy: Boolean) {
+        this.meanings = meanings
+        sortedBy(sortBy)
+    }
 
+    // Just sorts in ascending order if parameter is true, otherwise false.
+    fun sortedBy(ascendingOrder: Boolean) {
+        meanings = if (ascendingOrder) {
+            meanings.sortedBy { it.thumbs_up }
+        } else {
+            this.meanings.sortedByDescending { it.thumbs_up }
+        }
+    }
+    //endregion
+
+    //region Media Player functions
     private fun play(url: String) {
         GlobalScope.launch(Dispatchers.Default) {
             try {
@@ -63,9 +68,6 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
     }
 
     private fun killPlayer() {
-        if (mediaPlayer == null) {
-            return
-        }
         if (!mediaPlayer.isPlaying) {
             return
         }
@@ -77,9 +79,12 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
             return ""
         }
         val position = Random.nextInt(0, urls.size)
+        print(urls[position])
         return urls[position]
     }
+    //endregion
 
+    //region ViewHolder class
     inner class MeaningHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private var wordView = itemView.word
         private var thumbsUpView = itemView.thumbs_up_label
@@ -107,6 +112,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
             playView?.setOnClickListener { play(getSound(meaning.sound_urls)) }
         }
     }
+    //endregion
 
     companion object {
         fun convertDate(dateString: String): String {
