@@ -52,7 +52,7 @@ class MeaningReadWriteTest {
         meaningDAO.insertAll(list)
         val results = meaningDAO.findByTerm(meaning.word)
         MatcherAssert.assertThat(results.size, CoreMatchers.equalTo(1))
-        MatcherAssert.assertThat(meaning.defid, CoreMatchers.equalTo(results[0].defid))
+        MatcherAssert.assertThat(results[0].defid, CoreMatchers.equalTo(meaning.defid))
     }
 
     @Test
@@ -75,7 +75,7 @@ class MeaningReadWriteTest {
         meaningDAO.insertAll(list)
         val results = meaningDAO.findByTerm(meaning.word)
         MatcherAssert.assertThat(results.size, CoreMatchers.equalTo(1))
-        MatcherAssert.assertThat(meaning.defid, CoreMatchers.equalTo(results[0].defid))
+        MatcherAssert.assertThat(results[0].defid, CoreMatchers.equalTo(meaning.defid))
         MatcherAssert.assertThat(results[0].sound_urls.size, CoreMatchers.equalTo(1))
         MatcherAssert.assertThat(results[0].sound_urls[0], CoreMatchers.equalTo("1"))
     }
@@ -100,7 +100,7 @@ class MeaningReadWriteTest {
         meaningDAO.insertAll(list)
         val results = meaningDAO.findByTerm(meaning.word)
         MatcherAssert.assertThat(results.size, CoreMatchers.equalTo(1))
-        MatcherAssert.assertThat(meaning.defid, CoreMatchers.equalTo(results[0].defid))
+        MatcherAssert.assertThat(results[0].defid, CoreMatchers.equalTo(meaning.defid))
         MatcherAssert.assertThat(results[0].sound_urls.size, CoreMatchers.equalTo(0))
     }
 
@@ -124,7 +124,7 @@ class MeaningReadWriteTest {
         meaningDAO.insertAll(list)
         val results = meaningDAO.findByTerm(meaning.word)
         MatcherAssert.assertThat(results.size, CoreMatchers.equalTo(1))
-        MatcherAssert.assertThat(meaning.defid, CoreMatchers.equalTo(results[0].defid))
+        MatcherAssert.assertThat(results[0].defid, CoreMatchers.equalTo(meaning.defid))
         MatcherAssert.assertThat(results[0].sound_urls.size, CoreMatchers.equalTo(3))
         MatcherAssert.assertThat(results[0].sound_urls[0], CoreMatchers.equalTo("1"))
         MatcherAssert.assertThat(results[0].sound_urls[1], CoreMatchers.equalTo("2"))

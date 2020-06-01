@@ -6,10 +6,12 @@ import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import androidx.recyclerview.widget.RecyclerView
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
-import kotlinx.android.synthetic.main.meaning_item.view.*
+import kotlinx.android.synthetic.main.meaning_layout.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -18,20 +20,11 @@ import kotlin.random.Random
 class MeaningsAdapter(var meanings: List<Meaning>) :
     RecyclerView.Adapter<MeaningsAdapter.MeaningHolder>() {
 
-    private var mediaPlayer: MediaPlayer? = null
-
-    // Just sorts in ascending order if parameter is true, otherwise false.
-    fun sort(inAscendingOrder: Boolean) {
-        meanings = if (inAscendingOrder) {
-            meanings.sortedBy { it.thumbs_up }
-        } else {
-            this.meanings.sortedByDescending { it.thumbs_up }
-        }
-    }
+    private var mediaPlayer: MediaPlayer = MediaPlayer()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MeaningHolder {
         return MeaningHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.meaning_item, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.meaning_layout, parent, false)
         )
     }
 
@@ -43,27 +36,42 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
         holder.updateViews(meanings[position])
     }
 
-    // Media Player functions
+    //region Update/sort meanings data
+    fun replaceData(meanings: List<Meaning>, sortBy: Boolean) {
+        this.meanings = meanings
+        sortedBy(sortBy)
+    }
 
-    private fun play(url: String) {
-        if (mediaPlayer?.isPlaying == true) {
-            killPlayer()
+    // Just sorts in ascending order if parameter is true, otherwise false.
+    fun sortedBy(ascendingOrder: Boolean) {
+        meanings = if (ascendingOrder) {
+            meanings.sortedBy { it.thumbs_up }
+        } else {
+            this.meanings.sortedByDescending { it.thumbs_up }
         }
-        try {
-            mediaPlayer = MediaPlayer()
-            mediaPlayer?.setDataSource(url)
-            mediaPlayer?.prepare()
-            mediaPlayer?.start()
-        } catch (e: Exception) {
-            print("Failed to initialize media player - ${e.localizedMessage}")
+    }
+    //endregion
+
+    //region Media Player functions
+    private fun play(url: String) {
+        GlobalScope.launch(Dispatchers.Default) {
+            try {
+                killPlayer()
+                mediaPlayer = MediaPlayer()
+                mediaPlayer.setDataSource(url)
+                mediaPlayer.prepare()
+                mediaPlayer.start()
+            } catch (e: Exception) {
+                print("Failed to initialize media player - ${e.localizedMessage}")
+            }
         }
     }
 
     private fun killPlayer() {
-        if (mediaPlayer == null) {
+        if (!mediaPlayer.isPlaying) {
             return
         }
-        mediaPlayer?.reset()
+        mediaPlayer.reset()
     }
 
     private fun getSound(urls: List<String>): String {
@@ -71,18 +79,21 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
             return ""
         }
         val position = Random.nextInt(0, urls.size)
+        print(urls[position])
         return urls[position]
     }
+    //endregion
 
+    //region ViewHolder class
     inner class MeaningHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private var wordView = itemView.word
-        private var thumbsUpView = itemView.thumbs_up
-        private var thumbsDownView = itemView.thumbs_down
+        private var thumbsUpView = itemView.thumbs_up_label
+        private var thumbsDownView = itemView.thumbs_down_label
         private var definitionView = itemView.definition
         private var exampleView = itemView.example
         private var authorView = itemView.author
         private var dateView = itemView.date
-        private var playView: ImageButton? = itemView.play
+        private var playView = itemView.play
 
         fun updateViews(meaning: Meaning) {
             wordView.text = meaning.word
@@ -93,7 +104,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
             authorView.text = meaning.author
             dateView.text = convertDate(meaning.written_on)
             if (meaning.sound_urls.isEmpty()) {
-                playView?.visibility = View.GONE
+                playView?.visibility = View.INVISIBLE
                 return
             } else {
                 playView?.visibility = View.VISIBLE
@@ -101,6 +112,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
             playView?.setOnClickListener { play(getSound(meaning.sound_urls)) }
         }
     }
+    //endregion
 
     companion object {
         fun convertDate(dateString: String): String {

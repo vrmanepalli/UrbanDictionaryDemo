@@ -7,7 +7,10 @@ import androidx.room.TypeConverter
 import java.io.Serializable
 import java.util.*
 
-@Entity(tableName = "meaning", indices = [Index(value = ["defid"], unique = true), Index(value = ["word"], unique = false)])
+@Entity(
+    tableName = "meaning",
+    indices = [Index(value = ["defid"], unique = true), Index(value = ["word"], unique = false)]
+)
 data class Meaning(
     val definition: String, val permalink: String,
     val thumbs_up: Int,
@@ -31,7 +34,7 @@ class SoundURLsConverter {
         if (value == null || value.isEmpty()) {
             return Collections.emptyList()
         }
-        val sounds: MutableList<String>? = value?.split(SEPARATOR)?.toMutableList()
+        val sounds: MutableList<String>? = value.split(SEPARATOR).toMutableList()
         return sounds ?: Collections.emptyList()
     }
 
@@ -42,11 +45,13 @@ class SoundURLsConverter {
             return value
         }
         for (sound in cl) {
-            if (sound.isEmpty()) { continue }
+            if (sound.isEmpty()) {
+                continue
+            }
             value += "$sound,"
         }
         if (value.isNotEmpty()) {
-            value = value.substring(0,value.length-1)
+            value = value.substring(0, value.length - 1)
         }
         return value
     }
