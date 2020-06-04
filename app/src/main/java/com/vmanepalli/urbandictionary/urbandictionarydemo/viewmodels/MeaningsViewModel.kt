@@ -14,11 +14,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.vmanepalli.urbandictionary.urbandictionarydemo.MeaningsAdapter
 import com.vmanepalli.urbandictionary.urbandictionarydemo.ascendingOrder
-import com.vmanepalli.urbandictionary.urbandictionarydemo.database.MeaningsRepository
+import com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.DictionaryRepository
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
 import com.vmanepalli.urbandictionary.urbandictionarydemo.toast
 import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MeaningViewModelFactory(private val application: Application) :
     ViewModelProvider.Factory {
@@ -30,50 +33,63 @@ class MeaningViewModelFactory(private val application: Application) :
 class MeaningViewModel(private val application: Application) : ViewModel() {
 
     //region Variable declaration
-    private val meaningsRepository = MeaningsRepository(application)
-    private var searchTerm: String = ""
+    private val meaningsRepository = DictionaryRepository(application)
+    private lateinit var searchTerm: String
     private val meanings = MutableLiveData<List<Meaning>>()
 
     val meaningsAdapter: MeaningsAdapter by lazy { MeaningsAdapter(listOf()) }
     //endregion
 
-    //region Repository helper functions
+    //region Activity helper functions
     fun getAllMeanings(): LiveData<List<Meaning>> {
         return meanings
     }
 
+    fun flipSort(): Boolean {
+        if (isEmpty()) {
+            // Nothing to sort, so toast a message and return
+            application.toast("Sort is unavailable for empty data.")
+            return application.ascendingOrder
+        }
+        val order = !application.ascendingOrder
+        application.ascendingOrder = order
+        meaningsAdapter.sortedBy(order)
+        notifyDataChange()
+        return order
+    }
+
+    fun refresh() {
+        if (searchTerm.isEmpty()) {
+            application.toast("Refresh is unavailable for empty search")
+            return
+        }
+        searchMeanings(searchTerm)
+    }
+
     fun searchMeanings(
-        searchTerm: String,
-        completion: () -> Unit
+        searchTerm: String
     ) {
         this.searchTerm = searchTerm
-        meaningsRepository.getMeanings(searchTerm, completion)
+        meaningsRepository.getMeanings(searchTerm)
             .subscribeOn(Schedulers.io())
             .subscribeWith(object : DisposableObserver<List<Meaning>>() {
                 override fun onComplete() {
-                    completion()
+                    notifyDataChange()
                 }
 
                 override fun onError(e: Throwable?) {
-                    completion()
+                    meanings.postValue(listOf())
                     e?.message?.let { application.toast(it) }
                 }
 
                 override fun onNext(value: List<Meaning>?) {
                     value?.let {
                         meanings.postValue(it)
+                        replaceAdapterData(it)
+                        meaningsAdapter.sortedBy(application.ascendingOrder)
                     }
                 }
             })
-    }
-
-    fun refresh(completion: () -> Unit) {
-        if (searchTerm.isEmpty()) {
-            application.toast("Refresh is unavailable for empty search")
-            completion()
-            return
-        }
-        searchMeanings(searchTerm, completion)
     }
     //endregion
 
@@ -85,28 +101,7 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
     }
 
     fun notifyDataChange() {
-        meaningsAdapter.notifyDataSetChanged()
-    }
-
-    fun sortMeanings(): Boolean {
-        if (isEmpty()) {
-            // Nothing to sort, so toast a message and return
-            application.toast("Sort is unavailable for empty data.")
-            return application.ascendingOrder
-        }
-        val order = !application.ascendingOrder
-        application.ascendingOrder = order
-        this.sortedBy(order)
-        return order
-    }
-    //endregion
-
-    // region Private helper functions
-    private fun sortedBy(ascendingOrder: Boolean) {
-        with(meaningsAdapter) {
-            sortedBy(ascendingOrder)
-            notifyDataSetChanged()
-        }
+        GlobalScope.launch(Dispatchers.Main.immediate) { meaningsAdapter.notifyDataSetChanged() }
     }
 
     private fun isEmpty(): Boolean {

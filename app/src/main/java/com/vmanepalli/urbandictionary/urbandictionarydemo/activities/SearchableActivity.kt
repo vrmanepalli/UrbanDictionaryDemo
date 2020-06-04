@@ -7,14 +7,10 @@ package com.vmanepalli.urbandictionary.urbandictionarydemo.activities
  *
  **/
 
-import android.app.SearchManager
-import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.SearchView
-import android.widget.SearchView.OnQueryTextListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -23,19 +19,24 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vmanepalli.urbandictionary.urbandictionarydemo.*
 import com.vmanepalli.urbandictionary.urbandictionarydemo.viewmodels.MeaningViewModel
 import com.vmanepalli.urbandictionary.urbandictionarydemo.viewmodels.MeaningViewModelFactory
+import com.vmanepalli.urbandictionary.urbandictionarydemo.views.DictionarySearchView
 import kotlinx.android.synthetic.main.activity_searchable.*
 import kotlinx.android.synthetic.main.content_searchable.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class SearchableActivity : AppCompatActivity() {
+interface SearchListener {
+    fun submitQuery(query: String)
+}
+
+class SearchableActivity : AppCompatActivity(), SearchListener {
 
     //region Variable declarations
-    private var progress: MenuItem? = null
-    private var refreshItem: MenuItem? = null
-    private var sortItem: MenuItem? = null
-    private var searchActionView: SearchView? = null
+    private lateinit var progress: MenuItem
+    private lateinit var refreshItem: MenuItem
+    private lateinit var sortItem: MenuItem
+    private lateinit var searchActionView: DictionarySearchView
 
     private val meaningViewModel: MeaningViewModel by lazy {
         ViewModelProvider(
@@ -45,78 +46,49 @@ class SearchableActivity : AppCompatActivity() {
     }
     //endregion
 
-    //region Activity override functions
+    //region Lifecycle methods
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_searchable)
         setSupportActionBar(toolbar)
-        recycler_view.configure()
-        addObserver()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-
-        menuInflater.inflate(R.menu.menu_searchable, menu)
-        progress = menu?.findItem(R.id.progress)
-        refreshItem = menu?.findItem(R.id.refresh)
-        sortItem = menu?.findItem(R.id.sort)
-
-        val menuSearch = menu?.findItem(R.id.menu_search)
-        menuSearch?.let { searchMenuItem ->
-            (searchMenuItem.actionView as SearchView).apply {
-                configure()
-            }
-        }?.let { searchView ->
-            searchView.clearFocus()
-            searchActionView = searchView
-        }
-        updateSortIcon(application.ascendingOrder)
-        return true
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         recycler_view.addDivider(application, newConfig)
-        searchActionView?.clearFocus()
     }
     //endregion
 
-    //region Menu Items helper methods
-    // Only sorting either in asc or desc order of thumbs_up by maintaining a
-    // flag for storing previous state.
-    fun sortMeanings(item: MenuItem) {
-        val order = meaningViewModel.sortMeanings()
-        updateSortIcon(order)
-    }
+    //region Options Menu functions
 
-    // Refresh does API calls only to see if there any new entries available
-    fun refresh(item: MenuItem) {
-        showProgress()
-        meaningViewModel.refresh { hideProgress() }
-    }
-    //endregion
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
 
-    //region Private helper functions
-    // Observers Meanings Live Data list
-    // Notifies  when updates are available
-    private fun addObserver() {
-        meaningViewModel.getAllMeanings().observe(this, Observer {
-            meaningViewModel.replaceAdapterData(it ?: listOf())
-            meaningViewModel.notifyDataChange()
-        })
-    }
+        menuInflater.inflate(R.menu.menu_searchable, menu)
 
-    // Update the sort icon to reflect the state of the sort used
-    private fun updateSortIcon(inOrder: Boolean) {
-        sortItem?.icon = if (inOrder) {
-            resources.getDrawable(R.drawable.ic_asc_order, theme)
-        } else {
-            resources.getDrawable(R.drawable.ic_desc_order, theme)
+        menu?.let { thisMenu ->
+            progress = thisMenu.findItem(R.id.progress)
+            refreshItem = thisMenu.findItem(R.id.refresh)
+
+            thisMenu.findItem(R.id.sort)?.let { sortMenuItem ->
+                sortItem = sortMenuItem
+                setSortIcon(application.ascendingOrder)
+            }
+
+            thisMenu.findItem(R.id.menu_search)?.let { searchMenuItem ->
+                (searchMenuItem.actionView as DictionarySearchView).apply {
+                    setComponentName(componentName)
+                    setSearchListener(this@SearchableActivity)
+                }
+            }?.let { searchView ->
+                searchActionView = searchView
+                searchActionView.clearFocus()
+            }
         }
+        observeModel()
+        recycler_view.configure()
+        return true
     }
-    //endregion
 
-    //region Synchronized Private Functions
     @Synchronized
     private fun showProgress() {
         GlobalScope.launch(Dispatchers.Main.immediate) {
@@ -132,37 +104,50 @@ class SearchableActivity : AppCompatActivity() {
             refreshItem.show()
         }
     }
+
     //endregion
 
-    //region Private Extensions
-    private fun SearchView.configure() {
-        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        setSearchableInfo(searchManager.getSearchableInfo(componentName))
-
-        isIconified = false
-        isQueryRefinementEnabled = true
-
-        setOnCloseListener {
-            clearFocus()
-            setQuery("", false)
-            true
-        }
-
-        setOnQueryTextListener(object : OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                clearFocus()
-                this@SearchableActivity.showProgress()
-                meaningViewModel.searchMeanings(query) {
-                    this@SearchableActivity.hideProgress()
-                }
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String): Boolean {
-                return newText.isNotEmpty()
+    //region ViewModel functions
+    // Observers Meanings Live Data list
+    // Notifies  when updates are available
+    private fun observeModel() {
+        meaningViewModel.getAllMeanings().observe(this, Observer {
+            it?.let {
+                hideProgress()
             }
         })
     }
+
+    // Only sorting either in asc or desc order of thumbs_up by maintaining a
+    // flag for storing previous state.
+    fun flipSort(i: MenuItem) {
+        val order = meaningViewModel.flipSort()
+        setSortIcon(order)
+    }
+
+    // Update the sort icon to reflect the state of the sort used
+    private fun setSortIcon(inOrder: Boolean) {
+        sortItem.icon = if (inOrder) {
+            resources.getDrawable(R.drawable.ic_asc_order, theme)
+        } else {
+            resources.getDrawable(R.drawable.ic_desc_order, theme)
+        }
+    }
+
+    // Refresh does API calls only to see if there any new entries available
+    fun refresh(i: MenuItem) {
+        showProgress()
+        meaningViewModel.refresh()
+    }
+
+    @Synchronized
+    override fun submitQuery(query: String) {
+        showProgress()
+        meaningViewModel.searchMeanings(query)
+    }
+    //endregion
+
+    //region Private Extensions
 
     private fun RecyclerView.configure() {
         layoutManager = LinearLayoutManager(this@SearchableActivity)

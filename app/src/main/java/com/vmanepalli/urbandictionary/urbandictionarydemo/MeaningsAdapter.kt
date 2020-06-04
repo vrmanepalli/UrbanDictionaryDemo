@@ -39,7 +39,6 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
     //region Update/sort meanings data
     fun replaceData(meanings: List<Meaning>, sortBy: Boolean) {
         this.meanings = meanings
-        sortedBy(sortBy)
     }
 
     // Just sorts in ascending order if parameter is true, otherwise false.
@@ -86,14 +85,14 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
 
     //region ViewHolder class
     inner class MeaningHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private var wordView = itemView.word
-        private var thumbsUpView = itemView.thumbs_up_label
-        private var thumbsDownView = itemView.thumbs_down_label
-        private var definitionView = itemView.definition
-        private var exampleView = itemView.example
-        private var authorView = itemView.author
-        private var dateView = itemView.date
-        private var playView = itemView.play
+        private val wordView = itemView.word
+        private val thumbsUpView = itemView.thumbs_up_label
+        private val thumbsDownView = itemView.thumbs_down_label
+        private val definitionView = itemView.definition
+        private val exampleView = itemView.example
+        private val authorView = itemView.author
+        private val dateView = itemView.date
+        private val playView = itemView.play
 
         fun updateViews(meaning: Meaning) {
             wordView.text = meaning.word

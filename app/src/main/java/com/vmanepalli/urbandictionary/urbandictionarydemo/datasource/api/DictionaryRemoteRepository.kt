@@ -1,6 +1,5 @@
-package com.vmanepalli.urbandictionary.urbandictionarydemo.database
+package com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.api
 
-import com.vmanepalli.urbandictionary.urbandictionarydemo.api.DictionaryAPI
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
@@ -9,7 +8,7 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 
 
-class MeaningsRemoteRepository {
+class DictionaryRemoteRepository {
 
     private val service: DictionaryAPI =
         Retrofit.Builder().baseUrl(UD_API_ENDPOINT)

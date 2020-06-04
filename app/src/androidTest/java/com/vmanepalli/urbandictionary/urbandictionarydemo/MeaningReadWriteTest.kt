@@ -3,8 +3,8 @@ package com.vmanepalli.urbandictionary.urbandictionarydemo
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.vmanepalli.urbandictionary.urbandictionarydemo.database.AppDatabase
-import com.vmanepalli.urbandictionary.urbandictionarydemo.database.MeaningDAO
+import com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.local.AppDatabase
+import com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.local.DictionaryDAO
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
@@ -16,7 +16,7 @@ import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
 class MeaningReadWriteTest {
-    private lateinit var meaningDAO: MeaningDAO
+    private lateinit var meaningDAO: DictionaryDAO
     private lateinit var db: AppDatabase
 
     @Before

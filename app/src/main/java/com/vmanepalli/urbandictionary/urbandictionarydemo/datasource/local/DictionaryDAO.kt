@@ -1,4 +1,4 @@
-package com.vmanepalli.urbandictionary.urbandictionarydemo.database
+package com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.local
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -7,7 +7,7 @@ import androidx.room.Query
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
 
 @Dao
-interface MeaningDAO {
+interface DictionaryDAO {
 
     // So far pulling exact match and not looking for similar words when user scrolls to the bottom of recyclerview.
     // A future implementation is to add pagination

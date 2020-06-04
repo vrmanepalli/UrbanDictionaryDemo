@@ -1,4 +1,4 @@
-package com.vmanepalli.urbandictionary.urbandictionarydemo.api
+package com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.api
 
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.MeaningList
 import io.reactivex.Single

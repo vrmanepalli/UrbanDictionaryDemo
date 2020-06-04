@@ -1,4 +1,4 @@
-package com.vmanepalli.urbandictionary.urbandictionarydemo.database
+package com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.local
 
 import android.app.Application
 import androidx.annotation.NonNull
@@ -10,15 +10,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class MeaningsLocalRepository {
+class DictionaryLocalRepository {
 
-    private lateinit var meaningDAO: MeaningDAO
+    private lateinit var meaningDAO: DictionaryDAO
     private lateinit var application: Application
 
     operator fun invoke(@NonNull application: Application) = run {
         this.also {
             this.application = application
-            val db = AppDatabase(application)
+            val db =
+                AppDatabase(
+                    application
+                )
             meaningDAO = db.meaningDAO()
         }
     }
@@ -34,9 +37,8 @@ class MeaningsLocalRepository {
     }
 
     // Posting DB queries results so the observer in SearchableActivity or anywhere will update UI.
-    fun getMeanings(forTerm: String, completion: () -> Unit): Observable<List<Meaning>> {
+    fun getMeanings(forTerm: String): Observable<List<Meaning>> {
         return Observable.fromCallable {
-            completion()
             meaningDAO.findByTerm(forTerm)
         }
     }

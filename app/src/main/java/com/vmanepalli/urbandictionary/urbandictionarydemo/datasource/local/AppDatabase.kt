@@ -1,4 +1,4 @@
-package com.vmanepalli.urbandictionary.urbandictionarydemo.database
+package com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.local
 
 import android.content.Context
 import androidx.annotation.NonNull
@@ -16,7 +16,7 @@ import com.vmanepalli.urbandictionary.urbandictionarydemo.models.SoundURLsConver
 @TypeConverters(SoundURLsConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun meaningDAO(): MeaningDAO
+    abstract fun meaningDAO(): DictionaryDAO
 
     companion object {
         @Volatile
