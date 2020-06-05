@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 
 interface SearchListener {
     fun submitQuery(query: String)
+    fun findSuggestions(query: String)
 }
 
 class SearchableActivity : AppCompatActivity(), SearchListener {
@@ -63,9 +64,15 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
     // Observers Meanings Live Data list
     // Notifies  when updates are available
     private fun observeModel() {
-        meaningViewModel.getAllMeanings().observe(this, Observer {
+        meaningViewModel.meanings.observe(this, Observer {
             it?.let {
                 hideProgress()
+            }
+        })
+
+        meaningViewModel.suggestions.observe(this, Observer {
+            it?.let {
+                searchActionView.updateSuggestions(it)
             }
         })
     }
@@ -96,6 +103,10 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
     override fun submitQuery(query: String) {
         showProgress()
         meaningViewModel.searchMeanings(query)
+    }
+
+    override fun findSuggestions(query: String) {
+        meaningViewModel.searchSuggestions(query)
     }
     //endregion
 

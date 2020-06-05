@@ -5,6 +5,7 @@ import com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.api.Diction
 import com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.local.DictionaryLocalRepository
 import com.vmanepalli.urbandictionary.urbandictionarydemo.isConnectedToInternet
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
+import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Suggestions
 import com.vmanepalli.urbandictionary.urbandictionarydemo.toast
 import io.reactivex.Observable
 
@@ -33,6 +34,10 @@ class DictionaryRepository(private val application: Application) {
             }
         }
         return localRepository.getMeanings(searchTerm)
+    }
+
+    fun getSuggestions(searchTerm: String): Observable<List<Suggestions>> {
+        return localRepository.getSuggestions(searchTerm)
     }
 
 }

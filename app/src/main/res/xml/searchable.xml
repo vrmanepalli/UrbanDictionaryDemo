@@ -3,5 +3,6 @@
     android:hint="@string/search_hint"
     android:label="@string/app_name"
     android:searchSuggestAuthority="com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.MeaningSuggestionProvider"
+    android:searchSuggestIntentAction="android:intent.action.VIEW"
     android:searchSuggestSelection=" ?"
     />

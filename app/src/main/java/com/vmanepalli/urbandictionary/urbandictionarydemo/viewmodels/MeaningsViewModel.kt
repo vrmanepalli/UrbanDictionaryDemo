@@ -16,6 +16,7 @@ import com.vmanepalli.urbandictionary.urbandictionarydemo.MeaningsAdapter
 import com.vmanepalli.urbandictionary.urbandictionarydemo.ascendingOrder
 import com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.DictionaryRepository
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
+import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Suggestions
 import com.vmanepalli.urbandictionary.urbandictionarydemo.toast
 import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
@@ -35,16 +36,13 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
     //region Variable declaration
     private val meaningsRepository = DictionaryRepository(application)
     private lateinit var searchTerm: String
-    private val meanings = MutableLiveData<List<Meaning>>()
+    val meanings = MutableLiveData<List<Meaning>>()
+    val suggestions = MutableLiveData<List<Suggestions>>()
 
     val meaningsAdapter: MeaningsAdapter by lazy { MeaningsAdapter(listOf()) }
     //endregion
 
     //region Activity helper functions
-    fun getAllMeanings(): LiveData<List<Meaning>> {
-        return meanings
-    }
-
     fun flipSort(): Boolean {
         if (isEmpty()) {
             // Nothing to sort, so toast a message and return
@@ -89,6 +87,25 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
                         meaningsAdapter.sortedBy(application.ascendingOrder)
                     }
                 }
+            })
+    }
+
+    fun searchSuggestions(searchTerm: String) {
+        meaningsRepository.getSuggestions(searchTerm)
+            .subscribeOn(Schedulers.io())
+            .subscribeWith(object : DisposableObserver<List<Suggestions>>() {
+                override fun onComplete() {
+                    print("Done reading suggestions")
+                }
+
+                override fun onNext(value: List<Suggestions>?) {
+                    value?.let { suggestions.postValue(it) }
+                }
+
+                override fun onError(e: Throwable?) {
+                    e?.let { print(e.localizedMessage) }
+                }
+
             })
     }
     //endregion
