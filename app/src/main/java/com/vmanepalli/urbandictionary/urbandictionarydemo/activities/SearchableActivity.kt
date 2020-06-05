@@ -59,8 +59,47 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
     }
     //endregion
 
-    //region Options Menu functions
+    //region ViewModel functions
+    // Observers Meanings Live Data list
+    // Notifies  when updates are available
+    private fun observeModel() {
+        meaningViewModel.getAllMeanings().observe(this, Observer {
+            it?.let {
+                hideProgress()
+            }
+        })
+    }
 
+    // Only sorting either in asc or desc order of thumbs_up by maintaining a
+    // flag for storing previous state.
+    fun flipSort(i: MenuItem) {
+        val order = meaningViewModel.flipSort()
+        setSortIcon(order)
+    }
+
+    // Update the sort icon to reflect the state of the sort used
+    private fun setSortIcon(inOrder: Boolean) {
+        sortItem.icon = if (inOrder) {
+            resources.getDrawable(R.drawable.ic_asc_order, theme)
+        } else {
+            resources.getDrawable(R.drawable.ic_desc_order, theme)
+        }
+    }
+
+    // Refresh does API calls only to see if there any new entries available
+    fun refresh(i: MenuItem) {
+        showProgress()
+        meaningViewModel.refresh()
+    }
+
+    @Synchronized
+    override fun submitQuery(query: String) {
+        showProgress()
+        meaningViewModel.searchMeanings(query)
+    }
+    //endregion
+
+    //region Options Menu functions
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
 
         menuInflater.inflate(R.menu.menu_searchable, menu)
@@ -107,48 +146,7 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
 
     //endregion
 
-    //region ViewModel functions
-    // Observers Meanings Live Data list
-    // Notifies  when updates are available
-    private fun observeModel() {
-        meaningViewModel.getAllMeanings().observe(this, Observer {
-            it?.let {
-                hideProgress()
-            }
-        })
-    }
-
-    // Only sorting either in asc or desc order of thumbs_up by maintaining a
-    // flag for storing previous state.
-    fun flipSort(i: MenuItem) {
-        val order = meaningViewModel.flipSort()
-        setSortIcon(order)
-    }
-
-    // Update the sort icon to reflect the state of the sort used
-    private fun setSortIcon(inOrder: Boolean) {
-        sortItem.icon = if (inOrder) {
-            resources.getDrawable(R.drawable.ic_asc_order, theme)
-        } else {
-            resources.getDrawable(R.drawable.ic_desc_order, theme)
-        }
-    }
-
-    // Refresh does API calls only to see if there any new entries available
-    fun refresh(i: MenuItem) {
-        showProgress()
-        meaningViewModel.refresh()
-    }
-
-    @Synchronized
-    override fun submitQuery(query: String) {
-        showProgress()
-        meaningViewModel.searchMeanings(query)
-    }
-    //endregion
-
     //region Private Extensions
-
     private fun RecyclerView.configure() {
         layoutManager = LinearLayoutManager(this@SearchableActivity)
         setHasFixedSize(true)
