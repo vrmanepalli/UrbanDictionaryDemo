@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
-import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Suggestions
 
 @Dao
 interface DictionaryDAO {
@@ -14,9 +13,6 @@ interface DictionaryDAO {
     // A future implementation is to add pagination
     @Query("SELECT * FROM meaning WHERE word LIKE :term ")
     fun findByTerm(term: String): List<Meaning>
-
-    @Query("SELECT DISTINCT word, definition, defid FROM meaning WHERE word LIKE :term ORDER BY word ASC LIMIT 10")
-    fun findSuggestions(term: String): List<Suggestions>
 
     // Replacing old entries to make sure we get changes like more thumbs up/down, sound links and so on.
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 
 interface SearchListener {
     fun submitQuery(query: String)
-    fun findSuggestions(query: String)
 }
 
 class SearchableActivity : AppCompatActivity(), SearchListener {
@@ -66,13 +65,8 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
     private fun observeModel() {
         meaningViewModel.meanings.observe(this, Observer {
             it?.let {
-                hideProgress()
-            }
-        })
-
-        meaningViewModel.suggestions.observe(this, Observer {
-            it?.let {
                 searchActionView.updateSuggestions(it)
+                hideProgress()
             }
         })
     }
@@ -80,6 +74,12 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
     // Only sorting either in asc or desc order of thumbs_up by maintaining a
     // flag for storing previous state.
     fun flipSort(i: MenuItem) {
+        searchActionView.clearFocus()
+        if (meaningViewModel.isEmpty()) {
+            // Nothing to sort, so toast a message and return
+            application.toast("Sort is unavailable for empty search. Please enter your search to sort.")
+            return
+        }
         val order = meaningViewModel.flipSort()
         setSortIcon(order)
     }
@@ -95,6 +95,11 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
 
     // Refresh does API calls only to see if there any new entries available
     fun refresh(i: MenuItem) {
+        searchActionView.clearFocus()
+        if (!meaningViewModel.isReadyToRefresh()) {
+            application.toast("Unable to refresh on an empty search. Please enter your search to refresh.")
+            return
+        }
         showProgress()
         meaningViewModel.refresh()
     }
@@ -103,10 +108,6 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
     override fun submitQuery(query: String) {
         showProgress()
         meaningViewModel.searchMeanings(query)
-    }
-
-    override fun findSuggestions(query: String) {
-        meaningViewModel.searchSuggestions(query)
     }
     //endregion
 
@@ -131,7 +132,6 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
                 }
             }?.let { searchView ->
                 searchActionView = searchView
-                searchActionView.clearFocus()
             }
         }
         observeModel()

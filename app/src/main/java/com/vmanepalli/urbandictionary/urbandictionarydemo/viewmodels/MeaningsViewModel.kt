@@ -8,7 +8,6 @@ package com.vmanepalli.urbandictionary.urbandictionarydemo.viewmodels
  **/
 
 import android.app.Application
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -16,7 +15,6 @@ import com.vmanepalli.urbandictionary.urbandictionarydemo.MeaningsAdapter
 import com.vmanepalli.urbandictionary.urbandictionarydemo.ascendingOrder
 import com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.DictionaryRepository
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
-import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Suggestions
 import com.vmanepalli.urbandictionary.urbandictionarydemo.toast
 import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
@@ -34,21 +32,14 @@ class MeaningViewModelFactory(private val application: Application) :
 class MeaningViewModel(private val application: Application) : ViewModel() {
 
     //region Variable declaration
+    private var searchTerm: String = ""
     private val meaningsRepository = DictionaryRepository(application)
-    private lateinit var searchTerm: String
     val meanings = MutableLiveData<List<Meaning>>()
-    val suggestions = MutableLiveData<List<Suggestions>>()
-
     val meaningsAdapter: MeaningsAdapter by lazy { MeaningsAdapter(listOf()) }
     //endregion
 
     //region Activity helper functions
     fun flipSort(): Boolean {
-        if (isEmpty()) {
-            // Nothing to sort, so toast a message and return
-            application.toast("Sort is unavailable for empty data.")
-            return application.ascendingOrder
-        }
         val order = !application.ascendingOrder
         application.ascendingOrder = order
         meaningsAdapter.sortedBy(order)
@@ -57,10 +48,6 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
     }
 
     fun refresh() {
-        if (searchTerm.isEmpty()) {
-            application.toast("Refresh is unavailable for empty search")
-            return
-        }
         searchMeanings(searchTerm)
     }
 
@@ -89,25 +76,6 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
                 }
             })
     }
-
-    fun searchSuggestions(searchTerm: String) {
-        meaningsRepository.getSuggestions(searchTerm)
-            .subscribeOn(Schedulers.io())
-            .subscribeWith(object : DisposableObserver<List<Suggestions>>() {
-                override fun onComplete() {
-                    print("Done reading suggestions")
-                }
-
-                override fun onNext(value: List<Suggestions>?) {
-                    value?.let { suggestions.postValue(it) }
-                }
-
-                override fun onError(e: Throwable?) {
-                    e?.let { print(e.localizedMessage) }
-                }
-
-            })
-    }
     //endregion
 
     //region Adapter helper functions
@@ -121,8 +89,12 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
         GlobalScope.launch(Dispatchers.Main.immediate) { meaningsAdapter.notifyDataSetChanged() }
     }
 
-    private fun isEmpty(): Boolean {
+    fun isEmpty(): Boolean {
         return meanings.value?.isEmpty() ?: true
+    }
+
+    fun isReadyToRefresh(): Boolean {
+        return searchTerm.isNotEmpty()
     }
     // endregion
 

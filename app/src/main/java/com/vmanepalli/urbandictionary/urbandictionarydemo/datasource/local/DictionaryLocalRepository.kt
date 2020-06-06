@@ -3,7 +3,6 @@ package com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.local
 import android.app.Application
 import androidx.annotation.NonNull
 import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
-import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Suggestions
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -43,12 +42,5 @@ class DictionaryLocalRepository {
             meaningDAO.findByTerm(forTerm)
         }
     }
-
-    fun getSuggestions(forTerm: String): Observable<List<Suggestions>> {
-        return  Observable.fromCallable{
-            meaningDAO.findSuggestions(forTerm)
-        }
-    }
-
 
 }

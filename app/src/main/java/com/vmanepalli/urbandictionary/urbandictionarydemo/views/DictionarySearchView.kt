@@ -10,7 +10,7 @@ import android.provider.SearchRecentSuggestions
 import android.widget.SearchView
 import com.vmanepalli.urbandictionary.urbandictionarydemo.activities.SearchListener
 import com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.MeaningSuggestionProvider
-import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Suggestions
+import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
 
 /**
  * @author vmanepalli
@@ -19,8 +19,8 @@ import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Suggestions
  */
 class DictionarySearchView(context: Context) : SearchView(context) {
 
-    private val appContext: Context = context
     private lateinit var searchListener: SearchListener
+    private val appContext: Context = context
 
     private val recentSuggestions: SearchRecentSuggestions = SearchRecentSuggestions(
         appContext,
@@ -34,13 +34,7 @@ class DictionarySearchView(context: Context) : SearchView(context) {
 
         setOnQueryTextListener(object : OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                newText?.let {
-                    if (it.isNotEmpty()) {
-                        searchListener.findSuggestions("$it%")
-                        return true
-                    }
-                }
-                return false
+                return true
             }
 
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -70,6 +64,8 @@ class DictionarySearchView(context: Context) : SearchView(context) {
             setQuery("", false)
             true
         }
+
+        clearFocus()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration?) {
@@ -82,8 +78,8 @@ class DictionarySearchView(context: Context) : SearchView(context) {
         setSearchableInfo(searchManager.getSearchableInfo(name))
     }
 
-    fun updateSuggestions(suggestions: List<Suggestions>) {
-        suggestions.stream().forEach {
+    fun updateSuggestions(meanings: List<Meaning>) {
+        meanings.stream().forEach {
             recentSuggestions.saveRecentQuery(it.word, it.definition)
         }
     }
