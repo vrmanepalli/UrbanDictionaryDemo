@@ -16,7 +16,8 @@ class MeaningSuggestionProvider : SearchRecentSuggestionsProvider() {
 
     companion object {
         const val AUTHORITY = "com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.MeaningSuggestionProvider"
-        const val MODE = DATABASE_MODE_QUERIES
+        const val MODE =
+            DATABASE_MODE_2LINES or DATABASE_MODE_QUERIES
     }
 
 }
