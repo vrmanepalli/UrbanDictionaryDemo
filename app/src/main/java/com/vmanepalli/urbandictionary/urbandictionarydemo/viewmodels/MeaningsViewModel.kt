@@ -54,6 +54,7 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
     fun searchMeanings(
         searchTerm: String
     ) {
+        meaningsAdapter.prioritize(null)
         this.searchTerm = searchTerm
         meaningsRepository.getMeanings(searchTerm)
             .subscribeOn(Schedulers.io())
@@ -78,15 +79,15 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
     }
 
     fun searchMeanings(searchTerm: String, definition: String) {
-        meaningsAdapter.prioritize(definition)
         searchMeanings(searchTerm)
+        meaningsAdapter.prioritize(definition)
     }
     //endregion
 
     //region Adapter helper functions
     fun replaceAdapterData(meanings: List<Meaning>) {
         with(meaningsAdapter) {
-            replaceData(meanings, application.ascendingOrder)
+            replaceData(meanings)
         }
     }
 

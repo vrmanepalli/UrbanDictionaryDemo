@@ -39,7 +39,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
     }
 
     //region Update/sort meanings data
-    fun replaceData(meanings: List<Meaning>, sortBy: Boolean) {
+    fun replaceData(meanings: List<Meaning>) {
         this.meanings = meanings
     }
 
@@ -58,11 +58,10 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
                 aL.add(0, item)
                 meanings = aL
             }
-            proritizedDefinition = null
         }
     }
 
-    fun prioritize(definition: String) {
+    fun prioritize(definition: String?) {
         proritizedDefinition = definition
     }
     //endregion
