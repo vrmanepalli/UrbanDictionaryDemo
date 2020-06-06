@@ -2,6 +2,7 @@ package com.vmanepalli.urbandictionary.urbandictionarydemo.views
 
 import android.app.SearchManager
 import android.app.SearchManager.SUGGEST_COLUMN_TEXT_1
+import android.app.SearchManager.SUGGEST_COLUMN_TEXT_2
 import android.content.ComponentName
 import android.content.Context
 import android.content.res.Configuration
@@ -38,8 +39,8 @@ class DictionarySearchView(context: Context) : SearchView(context) {
             }
 
             override fun onQueryTextSubmit(query: String?): Boolean {
-                query?.let {
-                    searchListener.submitQuery(it)
+                query?.let {term ->
+                    searchListener.submitQuery(term)
                 }
                 clearFocus()
                 return true
@@ -52,9 +53,12 @@ class DictionarySearchView(context: Context) : SearchView(context) {
             }
 
             override fun onSuggestionClick(p0: Int): Boolean {
+                clearFocus()
                 val cursor = suggestionsAdapter.getItem(p0) as Cursor
                 val query = cursor.getString(cursor.getColumnIndex(SUGGEST_COLUMN_TEXT_1))
-                setQuery(query, true)
+                val definition = cursor.getString(cursor.getColumnIndex(SUGGEST_COLUMN_TEXT_2))
+                setQuery(query, false)
+                searchListener.submitSuggestionQuery(query, definition)
                 return true
             }
         })

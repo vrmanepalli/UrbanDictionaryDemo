@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 
 interface SearchListener {
     fun submitQuery(query: String)
+    fun submitSuggestionQuery(query: String, definition: String)
 }
 
 class SearchableActivity : AppCompatActivity(), SearchListener {
@@ -108,6 +109,11 @@ class SearchableActivity : AppCompatActivity(), SearchListener {
     override fun submitQuery(query: String) {
         showProgress()
         meaningViewModel.searchMeanings(query)
+    }
+
+    override fun submitSuggestionQuery(query: String, definition: String) {
+        showProgress()
+        meaningViewModel.searchMeanings(query, definition)
     }
     //endregion
 

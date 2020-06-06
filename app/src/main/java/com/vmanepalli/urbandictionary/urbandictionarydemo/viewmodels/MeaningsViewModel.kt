@@ -76,6 +76,11 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
                 }
             })
     }
+
+    fun searchMeanings(searchTerm: String, definition: String) {
+        meaningsAdapter.prioritize(definition)
+        searchMeanings(searchTerm)
+    }
     //endregion
 
     //region Adapter helper functions
