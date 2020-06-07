@@ -15,12 +15,14 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.random.Random
 
 class MeaningsAdapter(var meanings: List<Meaning>) :
     RecyclerView.Adapter<MeaningsAdapter.MeaningHolder>() {
 
     private var mediaPlayer: MediaPlayer = MediaPlayer()
+    private var proritizedDefinition: String? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MeaningHolder {
         return MeaningHolder(
@@ -37,7 +39,7 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
     }
 
     //region Update/sort meanings data
-    fun replaceData(meanings: List<Meaning>, sortBy: Boolean) {
+    fun replaceData(meanings: List<Meaning>) {
         this.meanings = meanings
     }
 
@@ -48,6 +50,19 @@ class MeaningsAdapter(var meanings: List<Meaning>) :
         } else {
             this.meanings.sortedByDescending { it.thumbs_up }
         }
+        proritizedDefinition?.let { definition ->
+            val meaning = meanings.find { it.definition == definition }
+            meaning?.let { item ->
+                val aL = ArrayList(meanings)
+                aL.remove(item)
+                aL.add(0, item)
+                meanings = aL
+            }
+        }
+    }
+
+    fun prioritize(definition: String?) {
+        proritizedDefinition = definition
     }
     //endregion
 

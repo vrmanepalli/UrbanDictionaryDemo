@@ -1,45 +1,64 @@
 package com.vmanepalli.urbandictionary.urbandictionarydemo.views
 
 import android.app.SearchManager
+import android.app.SearchManager.SUGGEST_COLUMN_TEXT_1
+import android.app.SearchManager.SUGGEST_COLUMN_TEXT_2
 import android.content.ComponentName
 import android.content.Context
-import android.content.SearchRecentSuggestionsProvider
+import android.content.res.Configuration
 import android.database.Cursor
-import android.database.MatrixCursor
-import android.provider.BaseColumns
 import android.provider.SearchRecentSuggestions
 import android.widget.SearchView
 import com.vmanepalli.urbandictionary.urbandictionarydemo.activities.SearchListener
 import com.vmanepalli.urbandictionary.urbandictionarydemo.datasource.MeaningSuggestionProvider
+import com.vmanepalli.urbandictionary.urbandictionarydemo.models.Meaning
 
 /**
  * @author vmanepalli
  * Date: 2020-06-02
  * Time: 16:46
  */
-class DictionarySearchView(context: Context?) : SearchView(context) {
+class DictionarySearchView(context: Context) : SearchView(context) {
 
-    private lateinit var appContext: Context
     private lateinit var searchListener: SearchListener
-    private lateinit var suggestions: List<String>
+    private val appContext: Context = context
+
+    private val recentSuggestions: SearchRecentSuggestions = SearchRecentSuggestions(
+        appContext,
+        MeaningSuggestionProvider.AUTHORITY,
+        MeaningSuggestionProvider.MODE
+    )
 
     init {
-
-        context?.let { appContext = it }
         isIconified = false
         isQueryRefinementEnabled = true
 
         setOnQueryTextListener(object : OnQueryTextListener {
             override fun onQueryTextChange(newText: String?): Boolean {
-                return newText?.isNotEmpty() ?: false
+                return true
             }
 
             override fun onQueryTextSubmit(query: String?): Boolean {
-                clearFocus()
-                query?.let {
-                    searchListener.submitQuery(it)
-                    SearchRecentSuggestions(appContext, MeaningSuggestionProvider.AUTHORITY, MeaningSuggestionProvider.MODE).saveRecentQuery(query, null)
+                query?.let {term ->
+                    searchListener.submitQuery(term)
                 }
+                clearFocus()
+                return true
+            }
+        })
+
+        setOnSuggestionListener(object : OnSuggestionListener {
+            override fun onSuggestionSelect(p0: Int): Boolean {
+                return true
+            }
+
+            override fun onSuggestionClick(p0: Int): Boolean {
+                clearFocus()
+                val cursor = suggestionsAdapter.getItem(p0) as Cursor
+                val query = cursor.getString(cursor.getColumnIndex(SUGGEST_COLUMN_TEXT_1))
+                val definition = cursor.getString(cursor.getColumnIndex(SUGGEST_COLUMN_TEXT_2))
+                setQuery(query, false)
+                searchListener.submitSuggestionQuery(query, definition)
                 return true
             }
         })
@@ -50,20 +69,12 @@ class DictionarySearchView(context: Context?) : SearchView(context) {
             true
         }
 
-        setOnSuggestionListener(object : OnSuggestionListener {
-            override fun onSuggestionClick(p0: Int): Boolean {
-                print("Clicked on suggestion $p0")
-                return true
-            }
+        clearFocus()
+    }
 
-            override fun onSuggestionSelect(p0: Int): Boolean {
-                clearFocus()
-                val cursor = suggestionsAdapter.getItem(p0) as Cursor
-                val query = cursor.getString(cursor.getColumnIndex(SearchManager.SUGGEST_COLUMN_TEXT_1))
-                setQuery(query, true)
-                return true
-            }
-        })
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        clearFocus()
     }
 
     fun setComponentName(name: ComponentName) {
@@ -71,7 +82,13 @@ class DictionarySearchView(context: Context?) : SearchView(context) {
         setSearchableInfo(searchManager.getSearchableInfo(name))
     }
 
-    fun setSearchListener(listener: SearchListener) {
-        searchListener = listener
+    fun updateSuggestions(meanings: List<Meaning>) {
+        meanings.stream().forEach {
+            recentSuggestions.saveRecentQuery(it.word, it.definition)
+        }
+    }
+
+    fun setSearchListener(searchableListener: SearchListener) {
+        this.searchListener = searchableListener
     }
 }

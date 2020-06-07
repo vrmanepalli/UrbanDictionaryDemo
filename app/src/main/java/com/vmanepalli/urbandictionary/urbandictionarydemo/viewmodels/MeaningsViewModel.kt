@@ -8,7 +8,6 @@ package com.vmanepalli.urbandictionary.urbandictionarydemo.viewmodels
  **/
 
 import android.app.Application
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -33,24 +32,14 @@ class MeaningViewModelFactory(private val application: Application) :
 class MeaningViewModel(private val application: Application) : ViewModel() {
 
     //region Variable declaration
+    private var searchTerm: String = ""
     private val meaningsRepository = DictionaryRepository(application)
-    private lateinit var searchTerm: String
-    private val meanings = MutableLiveData<List<Meaning>>()
-
+    val meanings = MutableLiveData<List<Meaning>>()
     val meaningsAdapter: MeaningsAdapter by lazy { MeaningsAdapter(listOf()) }
     //endregion
 
     //region Activity helper functions
-    fun getAllMeanings(): LiveData<List<Meaning>> {
-        return meanings
-    }
-
     fun flipSort(): Boolean {
-        if (isEmpty()) {
-            // Nothing to sort, so toast a message and return
-            application.toast("Sort is unavailable for empty data.")
-            return application.ascendingOrder
-        }
         val order = !application.ascendingOrder
         application.ascendingOrder = order
         meaningsAdapter.sortedBy(order)
@@ -59,16 +48,13 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
     }
 
     fun refresh() {
-        if (searchTerm.isEmpty()) {
-            application.toast("Refresh is unavailable for empty search")
-            return
-        }
         searchMeanings(searchTerm)
     }
 
     fun searchMeanings(
         searchTerm: String
     ) {
+        meaningsAdapter.prioritize(null)
         this.searchTerm = searchTerm
         meaningsRepository.getMeanings(searchTerm)
             .subscribeOn(Schedulers.io())
@@ -91,12 +77,17 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
                 }
             })
     }
+
+    fun searchMeanings(searchTerm: String, definition: String) {
+        searchMeanings(searchTerm)
+        meaningsAdapter.prioritize(definition)
+    }
     //endregion
 
     //region Adapter helper functions
     fun replaceAdapterData(meanings: List<Meaning>) {
         with(meaningsAdapter) {
-            replaceData(meanings, application.ascendingOrder)
+            replaceData(meanings)
         }
     }
 
@@ -104,8 +95,12 @@ class MeaningViewModel(private val application: Application) : ViewModel() {
         GlobalScope.launch(Dispatchers.Main.immediate) { meaningsAdapter.notifyDataSetChanged() }
     }
 
-    private fun isEmpty(): Boolean {
+    fun isEmpty(): Boolean {
         return meanings.value?.isEmpty() ?: true
+    }
+
+    fun isReadyToRefresh(): Boolean {
+        return searchTerm.isNotEmpty()
     }
     // endregion
 
